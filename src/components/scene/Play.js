@@ -42,12 +42,12 @@ class Play extends Phaser.Scene {
       this.cameras.main.centerY
     );
     this.inningPopup.setVisible(false); // Initially hide the popup
-    const inningText = this.add.text(0, 0, "Inning Change!", {
+    this.inningText = this.add.text(0, 0, "Inning Change!", {
       fontSize: 50,
       color: "black",
     });
-    inningText.setOrigin(0.5, 0.5); // Center the text within the container
-    this.inningPopup.add(inningText);
+    this.inningText.setOrigin(0.5, 0.5); // Center the text within the container
+    this.inningPopup.add(this.inningText);
   }
 
   createButtons(scene) {
@@ -207,11 +207,11 @@ class Play extends Phaser.Scene {
   CalculateRoundWinner(player1, player2) {
     if (player1 === player2) {
       this.over++;
-      this.updateFinalScore()
+      this.updateFinalScore();
       this.score = 0;
       this.scoreText.setText(`Score: ${this.score}`);
       if (this.inning === 2) {
-        alert("game over");
+        this.gameOverPopup();
       }
       if (this.inning === 1) {
         this.swapBatting();
@@ -234,12 +234,19 @@ class Play extends Phaser.Scene {
     this.playerOneSateIbat.setVisible(false);
     this.currentBatting = "player2";
     this.currentBolling = "player1";
-    this.inningChangePopup();
+    this.inningChangePopup("inning Change");
   }
-  inningChangePopup() {
+  inningChangePopup(text) {
     this.inningPopup.setVisible(true); // Make the popup visible
     // Optional: Add a timer to automatically hide the popup after a delay (e.g., 2 seconds)
+    this.inningText.setText(`${text}`);
     this.time.delayedCall(2000, () => this.inningPopup.setVisible(false));
+  }
+  gameOverPopup() {
+    const winner =
+      this.player1 > this.player2 ? "player one won" : "plyaer two won";
+    this.inningChangePopup(winner);
+    this.scene.restart();
   }
   increaseScore(points) {
     console.log(points);
