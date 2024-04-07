@@ -20,7 +20,7 @@ class Play extends Phaser.Scene {
     this.inningChangeIs = false;
     this.gameOver = false;
     this.score = 0;
-
+    this.battingCount = 0;
     // this.player1;
     // this.player2;
   }
@@ -240,13 +240,13 @@ class Play extends Phaser.Scene {
     this.inningPopup.setVisible(true); // Make the popup visible
     // Optional: Add a timer to automatically hide the popup after a delay (e.g., 2 seconds)
     this.inningText.setText(`${text}`);
-    this.time.delayedCall(2000, () => this.inningPopup.setVisible(false));
+    this.time.delayedCall(4000, () => this.inningPopup.setVisible(false));
   }
-  gameOverPopup() {
+   gameOverPopup() {
+    debugger
     const winner =
-      this.player1 > this.player2 ? "player one won" : "plyaer two won";
+      this.player1 > this.player2 ? "player one won" : "player two won";
     this.inningChangePopup(winner);
-    this.scene.restart();
   }
   increaseScore(points) {
     console.log(points);
@@ -270,25 +270,34 @@ class Play extends Phaser.Scene {
     ) {
       this.player2Score = this.score;
     }
+
     console.log("Scores are=>>>>", this.player1Score, this.player2Score);
+   
   }
+
   update() {
     if (this.over === 6) {
-      this.over = 0;
-      this.inning = 2;
-      this.updateFinalScore();
-
-      this.score = 0;
-      this.scoreText.setText(`Score: ${this.score}`);
-      console.log("inning change");
-      this.currentBatting = "player2";
-    }
-    if (this.inning === 2) {
-      if (!this.inningChangeIs) {
-        this.inningChangeIs = true;
+      if(this.inning===1){
+        this.updateFinalScore();
+        this.score = 0;
+        this.scoreText.setText(`Score: ${this.score}`);
+        this.inning++;
+        this.over = 0;
         this.swapBatting();
+        return
+      }
+      if (this.inning === 2) {
+        this.updateFinalScore();
+        this.gameOverPopup();
+        // this.scene.start("mainMenu")
       }
     }
+    // if (this.inning === 2) {
+    //   if (!this.inningChangeIs) {
+    //     this.inningChangeIs = true;
+    //     this.swapBatting();
+    //   }
+    // }
   }
 }
 export default Play;
