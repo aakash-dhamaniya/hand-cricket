@@ -9,11 +9,6 @@ class Play extends Phaser.Scene {
     this.currentBatting = "player1";
     this.currentBolling = "player2";
     this.inning = 1;
-    const matchStates = {
-      innning: 1,
-      currentBatting: this.currentBatting,
-      currentBalling: this.currentBalling,
-    };
     this.over = 0;
     this.scoreX = 31;
     this.scorey = 210;
@@ -26,7 +21,7 @@ class Play extends Phaser.Scene {
   }
 
   create() {
-    const image = this.add.image(0, 0, "background").setOrigin(0, 0);
+    this.add.image(0, 0, "background").setOrigin(0, 0);
     this.createButtons(this);
     //create boards for player and enemy
     this.input.on(
@@ -43,8 +38,9 @@ class Play extends Phaser.Scene {
     );
     this.inningPopup.setVisible(false); // Initially hide the popup
     this.inningText = this.add.text(0, 0, "Inning Change!", {
-      fontSize: 50,
-      color: "black",
+      fontSize: "75px", // Increase the font size
+      fontWeight: "bold", // Make the text bold
+      color: "red",
     });
     this.inningText.setOrigin(0.5, 0.5); // Center the text within the container
     this.inningPopup.add(this.inningText);
@@ -81,6 +77,7 @@ class Play extends Phaser.Scene {
     }
   }
   async showNumberOnBoard(number) {
+    console.log(1);
     // console.log("player==>", this.turn);
     if (this.isDisaplayingNumber) return;
 
@@ -89,7 +86,7 @@ class Play extends Phaser.Scene {
 
     if (this.turn === "player1") {
       const enemyValue = await this.botTurn();
-      const roundWinner = this.CalculateRoundWinner(this.player1, enemyValue);
+      this.CalculateRoundWinner(this.player1, enemyValue);
       // console.log(roundWinner);
 
       this.displayNumber(
@@ -210,18 +207,30 @@ class Play extends Phaser.Scene {
       this.updateFinalScore();
       this.score = 0;
       this.scoreText.setText(`Score: ${this.score}`);
-      if (this.inning === 2) {
-        this.gameOverPopup();
-      }
+
       if (this.inning === 1) {
         this.swapBatting();
         console.log(this.currentBatting, this.currentBolling);
+        return;
       }
-
+      if (this.inning === 2) {
+        this.gameOverPopup();
+      }
       return { name: "player1", run: "out" };
     } else {
       this.over++;
-      this.increaseScore(player1);
+      if (
+        (this.inning === 1 && this.currentBatting === "player1") ||
+        (this.inning === 2 && this.currentBatting === "payer1")
+      ) {
+        this.increaseScore(player1, "player1");
+      }
+      if (
+        (this.inning === 1 && this.currentBatting === "player2") ||
+        (this.inning === 2 && this.currentBatting === "player2")
+      ) {
+        this.increaseScore(player2, "player2");
+      }
       return { name: "player1", run: player1 };
     }
   }
@@ -234,6 +243,7 @@ class Play extends Phaser.Scene {
     this.playerOneSateIbat.setVisible(false);
     this.currentBatting = "player2";
     this.currentBolling = "player1";
+    this.inning++;
     this.inningChangePopup("inning Change");
   }
   inningChangePopup(text) {
@@ -242,20 +252,28 @@ class Play extends Phaser.Scene {
     this.inningText.setText(`${text}`);
     this.time.delayedCall(4000, () => this.inningPopup.setVisible(false));
   }
-   gameOverPopup() {
-    debugger
-    const winner =
-      this.player1 > this.player2 ? "player one won" : "player two won";
+  gameOverPopup() {
+    let winner =
+      this.player1Score > this.player2Score
+        ? "player one won"
+        : "player two won";
+    if (this.player1Score === this.player2Score) {
+      winner = "Tie";
+    }
     this.inningChangePopup(winner);
+    setTimeout(() => {
+      this.reSetObjects();
+      this.scene.start("mainMenu");
+    }, 1000);
   }
-  increaseScore(points) {
+  increaseScore(points, playerText) {
     console.log(points);
     this.score += points;
 
-    this.updateScoreText();
+    this.updateScoreText(playerText);
   }
-  updateScoreText() {
-    this.scoreText.setText(`Score: ${this.score}`);
+  updateScoreText(playerText) {
+    this.scoreText.setText(`${playerText} Score: ${this.score}`);
   }
   updateFinalScore() {
     if (
@@ -272,32 +290,41 @@ class Play extends Phaser.Scene {
     }
 
     console.log("Scores are=>>>>", this.player1Score, this.player2Score);
-   
   }
-
+  reSetObjects() {
+    this.isDisaplayingNumber = false;
+    this.turn = "player1";
+    this.player1Score = 0;
+    this.player2Score = 0;
+    this.currentBatting = "player1";
+    this.currentBolling = "player2";
+    this.inning = 1;
+    this.over = 0;
+    this.scoreX = 31;
+    this.scorey = 210;
+    this.inningChangeIs = false;
+    this.gameOver = false;
+    this.score = 0;
+    this.battingCount = 0;
+  }
   update() {
     if (this.over === 6) {
-      if(this.inning===1){
+      if (this.inning === 1) {
         this.updateFinalScore();
         this.score = 0;
         this.scoreText.setText(`Score: ${this.score}`);
-        this.inning++;
+
         this.over = 0;
         this.swapBatting();
-        return
+        return;
       }
       if (this.inning === 2) {
+        console.log("innning change2");
         this.updateFinalScore();
         this.gameOverPopup();
         // this.scene.start("mainMenu")
       }
     }
-    // if (this.inning === 2) {
-    //   if (!this.inningChangeIs) {
-    //     this.inningChangeIs = true;
-    //     this.swapBatting();
-    //   }
-    // }
   }
 }
 export default Play;
