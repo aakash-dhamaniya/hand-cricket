@@ -16,6 +16,8 @@ class Play extends Phaser.Scene {
     this.gameOver = false;
     this.score = 0;
     this.battingCount = 0;
+    this.player1ScoreX = 25;
+    this.plyaer2ScoreX = 800;
     // this.player1;
     // this.player2;
   }
@@ -38,12 +40,14 @@ class Play extends Phaser.Scene {
     );
     this.inningPopup.setVisible(false); // Initially hide the popup
     this.inningText = this.add.text(0, 0, "Inning Change!", {
-      fontSize: "75px", // Increase the font size
+      fontSize: "50px", // Increase the font size
       fontWeight: "bold", // Make the text bold
-      color: "red",
+      color: "black",
     });
+    let popupBackground = this.add.rectangle(0, 0, 400, 150, 0xffffff, 0.5);
+    popupBackground.setOrigin(0.5, 0.5);
     this.inningText.setOrigin(0.5, 0.5); // Center the text within the container
-    this.inningPopup.add(this.inningText);
+    this.inningPopup.add([popupBackground, this.inningText]);
   }
 
   createButtons(scene) {
@@ -86,8 +90,7 @@ class Play extends Phaser.Scene {
 
     if (this.turn === "player1") {
       const enemyValue = await this.botTurn();
-      this.CalculateRoundWinner(this.player1, enemyValue);
-      // console.log(roundWinner);
+      let roundWinner = this.CalculateRoundWinner(this.player1, enemyValue);
 
       this.displayNumber(
         this.playerBoard.width / 2,
@@ -102,6 +105,22 @@ class Play extends Phaser.Scene {
     //   this.turn = "player1";
     //   return;
     // }
+  }
+  displayRun(runDetails) {
+
+    if (runDetails.name === "player1") {
+      this.add.text(this.player1ScoreX, 300, runDetails.run, {
+        font: "50px bold",
+        fill: "#000000",
+      });
+      this.player1ScoreX += 30;
+    } else {
+      this.add.text(this.plyaer2ScoreX, 300, runDetails.run, {
+        font: "50px bold",
+        fill: "#000000",
+      });
+      this.plyaer2ScoreX += 30;
+    }
   }
 
   createBoard() {
@@ -178,6 +197,7 @@ class Play extends Phaser.Scene {
       font: "40px Arial",
       fill: "#000",
     });
+
     this.distroyNumber(numberText);
   }
   distroyNumber(numberText) {
@@ -211,6 +231,7 @@ class Play extends Phaser.Scene {
       if (this.inning === 1) {
         this.swapBatting();
         console.log(this.currentBatting, this.currentBolling);
+
         return;
       }
       if (this.inning === 2) {
@@ -224,14 +245,15 @@ class Play extends Phaser.Scene {
         (this.inning === 2 && this.currentBatting === "payer1")
       ) {
         this.increaseScore(player1, "player1");
+        this.displayRun({ name: "player1", run: player1 });
       }
       if (
         (this.inning === 1 && this.currentBatting === "player2") ||
         (this.inning === 2 && this.currentBatting === "player2")
       ) {
         this.increaseScore(player2, "player2");
+        this.displayRun({ name: "player2", run: player2 });
       }
-      return { name: "player1", run: player1 };
     }
   }
   swapBatting() {
@@ -264,7 +286,7 @@ class Play extends Phaser.Scene {
     setTimeout(() => {
       this.reSetObjects();
       this.scene.start("mainMenu");
-    }, 1000);
+    }, 3000);
   }
   increaseScore(points, playerText) {
     console.log(points);
@@ -306,6 +328,8 @@ class Play extends Phaser.Scene {
     this.gameOver = false;
     this.score = 0;
     this.battingCount = 0;
+    this.player1ScoreX = 25;
+    this.plyaer2ScoreX = 25;
   }
   update() {
     if (this.over === 6) {
