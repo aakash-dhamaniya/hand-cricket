@@ -16,8 +16,15 @@ class MainMenu extends Phaser.Scene {
     playWithFriendButton.setInteractive({ useHandCursor: true });
     playWithCpuButton.on("pointerdown", () => {
       // Transition to the Play scene (with CPU logic)
-      this.scene.start("play", { mode: "cpu" }); // Pass data to Play scene
+      const playerTurn = this.randomToss();
+     
+      this.scene.start("CoinTossScene", { mode: "cpu", playerTurn }); // Pass data to Play scene
     });
+  }
+  randomToss() {
+    let plyaers = ["player1", "player2"];
+    const turn = Phaser.Math.Between(0, 1);
+    return plyaers[turn];
   }
 }
 export default MainMenu;

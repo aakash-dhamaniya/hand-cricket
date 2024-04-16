@@ -6,8 +6,8 @@ class Play extends Phaser.Scene {
     this.turn = "player1";
     this.player1Score = 0;
     this.player2Score = 0;
-    this.currentBatting = "player1";
-    this.currentBolling = "player2";
+    this.currentBatting = null;
+    this.currentBolling = null;
     this.inning = 1;
     this.over = 0;
     this.scoreX = 31;
@@ -17,22 +17,25 @@ class Play extends Phaser.Scene {
     this.score = 0;
     this.battingCount = 0;
     this.player1ScoreX = 25;
-    this.plyaer2ScoreX = 800;
+    this.plyaer2ScoreX = 750;
     // this.player1;
     // this.player2;
   }
-
+  // init() {
+  //   const currentBatting = this.scene.data.get("currentBatting");
+  //   const currentBowling = this.scene.data.get("currentBowling");
+  //   console.log(currentBatting, currentBowling);
+  // }
   create() {
+    const { currentBatting, currentBowlling } = this.scene.settings.data;
+
+    this.currentBatting = currentBatting;
+    this.currentBolling = currentBowlling;
+
     this.add.image(0, 0, "background").setOrigin(0, 0);
     this.createButtons(this);
     //create boards for player and enemy
-    this.input.on(
-      "pointerdown",
-      (location) => {
-        // console.log(location.x, location.y);
-      },
-      this
-    );
+
     this.createBoard();
     this.inningPopup = this.add.container(
       this.cameras.main.centerX,
@@ -40,7 +43,7 @@ class Play extends Phaser.Scene {
     );
     this.inningPopup.setVisible(false); // Initially hide the popup
     this.inningText = this.add.text(0, 0, "Inning Change!", {
-      fontSize: "50px", // Increase the font size
+      fontSize: "45px", // Increase the font size
       fontWeight: "bold", // Make the text bold
       color: "black",
     });
@@ -82,6 +85,7 @@ class Play extends Phaser.Scene {
   }
   async showNumberOnBoard(number) {
     console.log(1);
+    console.log(this.player1Score, this.player2Score);
     // console.log("player==>", this.turn);
     if (this.isDisaplayingNumber) return;
 
@@ -99,23 +103,16 @@ class Play extends Phaser.Scene {
       );
       return;
     }
-
-    // if (this.turn === "player2") {
-    //   this.displayNumber(this.playerBoard.width + 550, this.playerBoard.y);
-    //   this.turn = "player1";
-    //   return;
-    // }
   }
   displayRun(runDetails) {
-
     if (runDetails.name === "player1") {
-      this.add.text(this.player1ScoreX, 300, runDetails.run, {
+      this.add.text(this.player1ScoreX, 200, runDetails.run, {
         font: "50px bold",
         fill: "#000000",
       });
       this.player1ScoreX += 30;
     } else {
-      this.add.text(this.plyaer2ScoreX, 300, runDetails.run, {
+      this.add.text(this.plyaer2ScoreX, 200, runDetails.run, {
         font: "50px bold",
         fill: "#000000",
       });
@@ -165,8 +162,7 @@ class Play extends Phaser.Scene {
       this.playerBoard.y - 225,
       "ball"
     );
-    this.playerTwoStatebat.setVisible(false);
-    this.playerTwoStateball.setVisible(true);
+
     //player
     this.playerOneSateIbat = this.add.sprite(
       this.playerBoard.x + 150,
@@ -179,9 +175,11 @@ class Play extends Phaser.Scene {
       "ball"
     );
     this.playerOneSateIball.setVisible(false);
-    this.playerOneSateIbat.setVisible(true);
+    this.playerOneSateIbat.setVisible(false);
+    this.playerTwoStateball.setVisible(false);
+    this.playerTwoStatebat.setVisible(false);
     //scores
-
+    this.initializeicons();
     this.scoreText = this.add.text(
       this.cameras.main.centerX - 25,
       50,
@@ -191,6 +189,18 @@ class Play extends Phaser.Scene {
         color: "green",
       }
     );
+  }
+  //this will set icons for ball or bat
+  initializeicons() {
+
+    if (this.currentBatting === "player1") {
+      this.playerOneSateIbat.setVisible(true);
+      this.playerTwoStateball.setVisible(true)
+    } else {
+      this.playerTwoStatebat.setVisible(true);
+      this.playerOneSateIball.setVisible(true)
+      
+    }
   }
   displayNumber(width, y, run) {
     let numberText = this.add.text(width, y, String(run), {
@@ -240,9 +250,10 @@ class Play extends Phaser.Scene {
       return { name: "player1", run: "out" };
     } else {
       this.over++;
+
       if (
         (this.inning === 1 && this.currentBatting === "player1") ||
-        (this.inning === 2 && this.currentBatting === "payer1")
+        (this.inning === 2 && this.currentBatting === "player1")
       ) {
         this.increaseScore(player1, "player1");
         this.displayRun({ name: "player1", run: player1 });
@@ -259,12 +270,25 @@ class Play extends Phaser.Scene {
   swapBatting() {
     this.over = 0;
     console.log(this.playerOneStateIcon);
-    this.playerTwoStateball.setVisible(false);
-    this.playerTwoStatebat.setVisible(true);
-    this.playerOneSateIball.setVisible(true);
-    this.playerOneSateIbat.setVisible(false);
-    this.currentBatting = "player2";
-    this.currentBolling = "player1";
+
+    if (this.currentBatting === "player1") {
+      this.currentBatting = "player2";
+      this.currentBolling = "player1";
+      this.playerOneSateIball.setVisible(true);
+      this.playerOneSateIbat.setVisible(false);
+      //for player 2
+      this.playerTwoStateball.setVisible(false);
+      this.playerTwoStatebat.setVisible(true);
+    } else {
+      this.currentBatting = "player1";
+      this.currentBolling = "player2";
+      this.playerTwoStateball.setVisible(true);
+      this.playerTwoStatebat.setVisible(false);
+      //player 1
+      this.playerOneSateIball.setVisible(false);
+      this.playerOneSateIbat.setVisible(true);
+    }
+
     this.inning++;
     this.inningChangePopup("inning Change");
   }
@@ -318,8 +342,8 @@ class Play extends Phaser.Scene {
     this.turn = "player1";
     this.player1Score = 0;
     this.player2Score = 0;
-    this.currentBatting = "player1";
-    this.currentBolling = "player2";
+    this.currentBatting = null;
+    this.currentBolling = null;
     this.inning = 1;
     this.over = 0;
     this.scoreX = 31;
@@ -329,9 +353,10 @@ class Play extends Phaser.Scene {
     this.score = 0;
     this.battingCount = 0;
     this.player1ScoreX = 25;
-    this.plyaer2ScoreX = 25;
+    this.plyaer2ScoreX = 750;
   }
   update() {
+    console.log(this.inning);
     if (this.over === 6) {
       if (this.inning === 1) {
         this.updateFinalScore();

@@ -4,9 +4,10 @@ import Phaser from "phaser";
 import Preload from "./scene/Preload";
 import Play from "./scene/Play";
 import MainMenu from "./scene/MainMenu";
+import CoinTossScene from "./scene/CoinTossScene";
 function GameIndex() {
   useEffect(() => {
-    const Scene = [Preload, Play,MainMenu];
+    const Scene = [Preload, Play,MainMenu,CoinTossScene];
     const Shared_config = {
       width: 800,
       height: 600,
